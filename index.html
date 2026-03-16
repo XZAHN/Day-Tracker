@@ -199,9 +199,6 @@
   transform: translateY(1px);
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
-  transform: translateY(1px);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-}
 
 .modal {
   display: none;
@@ -512,6 +509,7 @@ pickDateBtn.onclick = () => {
 
 // Open day tracker modal
 dayTrackerBtn.onclick = () => {
+  totalDaysInput.value = "";
   modal.style.display = "flex";
 };
 
@@ -520,6 +518,13 @@ const modalCloseX = document.getElementById("modalCloseX");
 
 modalCloseX.onclick = () => {
   modal.style.display = "none";
+};
+
+// Close modal when clicking outside
+modal.onclick = (e) => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+  }
 };
 
 // Close date picker modal
