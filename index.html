@@ -400,7 +400,7 @@ button:active {
 
 .modal-buttons .save-btn,
 .modal-buttons .reset-btn {
-  width: 45%;
+  width: 30%;
 }
 
   </style>
@@ -458,6 +458,7 @@ button:active {
 
   <div class="modal-buttons">
     <button id="useDateBtn" class="save-btn">Use This Date</button>
+    <button id="clearDateBtn" class="reset-btn">Clear</button>
     <button id="cancelDateBtn" class="reset-btn">Cancel</button>
   </div>
 </div>
@@ -474,6 +475,7 @@ button:active {
   const API = "";
 
   let isDay = true;
+  let isAnimating = false;
 
   // Load initial value
   fetch(`${API}/counter`)
@@ -498,6 +500,7 @@ const datePickerModal = document.getElementById("datePickerModal");
 const overlay = document.getElementById("overlay");
 const closeDatePicker = document.getElementById("closeDatePicker");
 const useDateBtn = document.getElementById("useDateBtn");
+const clearDateBtn = document.getElementById("clearDateBtn");
 const cancelDateBtn = document.getElementById("cancelDateBtn");
 const targetDateInput = document.getElementById("targetDateInput");
 
@@ -535,6 +538,19 @@ closeDatePicker.onclick = () => {
 
 // Cancel date picker
 cancelDateBtn.onclick = () => {
+  overlay.style.display = "none";
+  datePickerModal.style.display = "none";
+};
+
+// Clear date effect
+clearDateBtn.onclick = () => {
+  totalDays = null;
+  // Update display to just the counter
+  fetch(`${API}/counter`)
+    .then(res => res.json())
+    .then(data => {
+      counterDisplay.innerText = data.counter;
+    });
   overlay.style.display = "none";
   datePickerModal.style.display = "none";
 };
@@ -630,79 +646,84 @@ useDateBtn.onclick = () => {
     animateSunMoon();
   }
 
-  function fullDayCycle() {
-  runDayCycle(() => {
-    runNightCycle(() => {
-      // After night ends → return to day state
-      document.body.className = "day";
+async function fullDayCycle() {
+  await runDayCycle();
+  await runNightCycle();
+  // After night ends → return to day state
+  document.body.className = "day";
 
-      // Reset sun/moon positions and visibility
-      const sun = document.querySelector(".sun");
-      const moon = document.querySelector(".moon");
+  // Reset sun/moon positions and visibility
+  const sun = document.querySelector(".sun");
+  const moon = document.querySelector(".moon");
 
-      sun.style.animation = "none";
-      moon.style.animation = "none";
+  sun.style.animation = "none";
+  moon.style.animation = "none";
 
-      sun.style.opacity = 1;
-      moon.style.opacity = 0;
+  sun.style.opacity = 1;
+  moon.style.opacity = 0;
 
-      sun.style.transform = "translateY(0) translateX(-40vw)";
-      moon.style.transform = "translateY(0) translateX(-40vw)";
-    });
+  sun.style.transform = "translateY(0) translateX(-40vw)";
+  moon.style.transform = "translateY(0) translateX(-40vw)";
+}
+
+
+function runDayCycle() {
+  return new Promise(resolve => {
+    document.body.className = "day";
+
+    const sun = document.querySelector(".sun");
+
+    sun.style.animation = "none";
+    sun.offsetHeight;
+
+    sun.style.animation = "arcAcross 2s ease-in-out forwards";
+    sun.style.opacity = 1;
+
+    setTimeout(() => {
+      sun.style.opacity = 0;
+      resolve();
+    }, 2000);
   });
 }
 
 
-function runDayCycle(callback) {
-  document.body.className = "day";
+function runNightCycle() {
+  return new Promise(resolve => {
+    document.body.className = "night";
 
-  const sun = document.querySelector(".sun");
+    const moon = document.querySelector(".moon");
 
-  sun.style.animation = "none";
-  sun.offsetHeight;
+    moon.style.animation = "none";
+    moon.offsetHeight;
 
-  sun.style.animation = "arcAcross 2s ease-in-out forwards";
-  sun.style.opacity = 1;
+    moon.style.animation = "arcAcross 2s ease-in-out forwards";
+    moon.style.opacity = 1;
 
-  setTimeout(() => {
-    sun.style.opacity = 0;
-    if (callback) callback();
-  }, 2000); // changed from 6000
-}
-
-
-function runNightCycle(callback) {
-  document.body.className = "night";
-
-  const moon = document.querySelector(".moon");
-
-  moon.style.animation = "none";
-  moon.offsetHeight;
-
-  moon.style.animation = "arcAcross 2s ease-in-out forwards";
-  moon.style.opacity = 1;
-
-  setTimeout(() => {
-    moon.style.opacity = 0;
-    if (callback) callback();
-  }, 2000); // changed from 6000
+    setTimeout(() => {
+      moon.style.opacity = 0;
+      resolve();
+    }, 2000);
+  });
 }
 
   function increment() {
   fetch(`${API}/counter/increment`, { method: "POST" })
     .then(res => res.json())
-    .then(data => {
-  const current = data.counter;
+    .then(async data => {
+      const current = data.counter;
 
-  if (totalDays) {
-    counterDisplay.innerText = `${current} / ${totalDays}`;
-  } else {
-    counterDisplay.innerText = current;
-  }
+      if (totalDays) {
+        counterDisplay.innerText = `${current} / ${totalDays}`;
+      } else {
+        counterDisplay.innerText = current;
+      }
 
-  fullDayCycle();
-});
-
+      if (!isAnimating) {
+        isAnimating = true;
+        await fullDayCycle();
+        isAnimating = false;
+      }
+    });
   }
 
 
