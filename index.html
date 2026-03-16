@@ -206,17 +206,6 @@
 
 /* MODAL OVERLAY */
 
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  z-index: 1500;
-}
-
 .modal {
   display: none;
   position: fixed;
@@ -388,26 +377,22 @@ button:active {
   z-index: 900;
 }
 
-.modal-box {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  width: 350px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-
-  z-index: 1000;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-}
-
 .close-x {
   font-size: 22px;
   cursor: pointer;
   float: right;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #333;
 }
 
   </style>
@@ -454,7 +439,7 @@ button:active {
 <div id="overlay" class="overlay"></div>
 
 <!-- Date Picker Modal -->
-<div id="datePickerModal" class="modal-box">
+<div id="datePickerModal">
   <div class="modal-header">
     <span id="closeDatePicker" class="close-x">✕</span>
     <h2>Select a Date</h2>
@@ -582,15 +567,17 @@ useDateBtn.onclick = () => {
   const diffTime = targetDate - today;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  document.getElementById("count").innerText = diffDays;
-
-  // optional: store on backend
+  totalDays = diffDays;
+  // Reset counter to 0 for new tracking period
   fetch(`${API}/counter/set`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ counter: diffDays })
+    body: JSON.stringify({ counter: 0 })
+  }).then(() => {
+    document.getElementById("count").innerText = `0 / ${totalDays}`;
   });
 
+  overlay.style.display = "none";
   datePickerModal.style.display = "none";
 };
 
@@ -697,7 +684,13 @@ function runNightCycle(callback) {
     fetch(`${API}/counter/decrement`, { method: "POST" })
       .then(res => res.json())
       .then(data => {
-        document.getElementById("count").innerText = data.counter;
+        const current = data.counter;
+
+        if (totalDays) {
+          counterDisplay.innerText = `${current} / ${totalDays}`;
+        } else {
+          counterDisplay.innerText = current;
+        }
       });
   }
 </script>
