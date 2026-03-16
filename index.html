@@ -158,53 +158,50 @@
   text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
     }
 
-    /* DAY TRACKER BUTTON */
-.day-tracker-btn {
-
-  height: auto;
-  width: 90px;
+    /* DAY TRACKER BUTTONS */
+.button-container {
   position: absolute;
   top: 20px;
   right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
 
-  background: rgba(255, 255, 255, 0.55);
-  color: black;
-
-  padding: 6px 14px;        /* much smaller, cleaner */
+.tracker-btn {
+  height: auto;
+  width: auto;
+  padding: 6px 14px;
   font-size: 11px;
   font-weight: 700;
-
-  border-radius: 16px;       /* smaller pill */
+  border-radius: 16px;
   border: 1px solid rgba(0, 0, 0, 0.15);
-
   cursor: pointer;
   white-space: nowrap;
-  
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-
   box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-
   transition: 
     transform 0.1s ease,
     box-shadow 0.2s ease,
     background 0.2s ease;
+  background: rgba(255, 255, 255, 0.55);
+  color: black;
 }
 
-.day-tracker-btn:hover {
+.tracker-btn:hover {
   background: rgba(255, 255, 255, 0.75);
   transform: translateY(-1px);
   box-shadow: 0 3px 10px rgba(0,0,0,0.25);
 }
 
-.day-tracker-btn:active {
+.tracker-btn:active {
   transform: translateY(1px);
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
-
-
-
-/* MODAL OVERLAY */
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
 
 .modal {
   display: none;
@@ -418,8 +415,11 @@ button:active {
   <div id="dayLabel">Day</div>
   <div id="count">0</div>
 
-  <!-- DAY TRACKER BUTTON -->
-  <button id="dayTrackerBtn" class="day-tracker-btn">Day-Tracker</button>
+  <!-- DAY TRACKER BUTTONS -->
+  <div class="button-container">
+    <button id="pickDateBtn" class="tracker-btn">Pick a Date</button>
+    <button id="dayTrackerBtn" class="tracker-btn">Day Tracker</button>
+  </div>
 
   <!-- MODAL OVERLAY -->
   <div id="dayTrackerModal" class="modal">
@@ -427,7 +427,6 @@ button:active {
     <div class="modal-close-x" id="modalCloseX">✕</div>
 
     <h2>Set Total Days</h2>
-    <button id="openDatePickerBtn">Pick a Date</button>
     <input type="number" id="totalDaysInput" placeholder="Enter number of days">
     <button id="saveDaysBtn" class="save-btn">Save</button>
     <button id="resetDaysBtn" class="reset-btn">Reset</button>
@@ -474,13 +473,27 @@ button:active {
 
 // DOM references
 const modal = document.getElementById("dayTrackerModal");
+const pickDateBtn = document.getElementById("pickDateBtn");
 const dayTrackerBtn = document.getElementById("dayTrackerBtn");
 const saveBtn = document.getElementById("saveDaysBtn");
 const closeModalBtn = document.getElementById("closeModalBtn");
 const totalDaysInput = document.getElementById("totalDaysInput");
 const counterDisplay = document.getElementById("count");
 
-// Open modal
+// Date picker references
+const datePickerModal = document.getElementById("datePickerModal");
+const overlay = document.getElementById("overlay");
+const closeDatePicker = document.getElementById("closeDatePicker");
+const useDateBtn = document.getElementById("useDateBtn");
+const targetDateInput = document.getElementById("targetDateInput");
+
+// Open date picker modal
+pickDateBtn.onclick = () => {
+  overlay.style.display = "block";
+  datePickerModal.style.display = "block";
+};
+
+// Open day tracker modal
 dayTrackerBtn.onclick = () => {
   modal.style.display = "flex";
 };
@@ -492,19 +505,7 @@ modalCloseX.onclick = () => {
   modal.style.display = "none";
 };
 
-
-
-//New date picker modal code
-const OpenDatePickerBtn = document.getElementById("openDatePickerBtn");
-const datePickerModal = document.getElementById("datePickerModal");
-const overlay = document.getElementById("overlay");
-const closeDatePicker = document.getElementById("closeDatePicker");
-
-openDatePickerBtn.onclick = () => {
-  overlay.style.display = "block";
-  datePickerModal.style.display = "block";
-};
-
+// Close date picker modal
 closeDatePicker.onclick = () => {
   overlay.style.display = "none";
   datePickerModal.style.display = "none";
@@ -552,9 +553,6 @@ saveBtn.onclick = () => {
 
 
   // Use selected date to calculate days
-const useDateBtn = document.getElementById("useDateBtn");
-const targetDateInput = document.getElementById("targetDateInput");
-
 useDateBtn.onclick = () => {
   const targetDate = new Date(targetDateInput.value);
   const today = new Date();
